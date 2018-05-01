@@ -1,0 +1,8 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+%%! -smp enable -sname factorial -mnesia debug verbose
+
+main(_) ->
+    code:load_abs("render_nif.erl"),
+    Bin = render_nif:render(1, "a"),
+    io:format("Bin: ~p~n", [Bin]).
