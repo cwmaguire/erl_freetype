@@ -20,6 +20,10 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
                                int argc,
                                const ERL_NIF_TERM argv[]) {
 
+    int pixelWidth = 50;
+    int pixelHeight = 40;
+    int pixelSize = pixelWidth * pixelHeight;
+
     printf("render_nif.c - render_nif\r\n");
     /*unsigned char *bitmap;*/
     int num_chars = 0;
@@ -27,22 +31,19 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     printf("Declare ErlNifBinary *bin\r\n");
     // A binary that can be managed by Erlang
     ErlNifBinary bin = {.data = (unsigned char *) NULL};
-    bin.data = malloc(sizeof(char) * 640 * 480);
-    bin.size = sizeof(char) * 640 * 480;
+    // TODO not sure if I need to allocate space here and also when
+    // I call enif_alloc_binary
+    bin.data = malloc(sizeof(char) * pixelSize);
+    bin.size = sizeof(char) * pixelSize;
 
     printf("Declare char *chars\r\n");
     char *chars = NULL;
 
-    /*bitmap = (unsigned char*) malloc(sizeof(char) * 640 * 480);*/
-
     printf("Allocating Erlang binary\r\n");
-
-    size_t s = sizeof(char) * 640 * 480;
-
-    // allocate a binary
-    /*enif_alloc_binary(sizeof(char) * 640 * 480, bin);*/
+    // allocate a Erlang binary for each alpha pixel
+    size_t s = sizeof(char) * pixelSize;
+    /*size_t s = bin.size;*/
     enif_alloc_binary(s, &bin);
-
     printf("Allocated Erlang binary\r\n");
 
     if (!enif_get_int(env, argv[0], &num_chars)) {
@@ -62,11 +63,6 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
         printf("Failed to get chars\r\n");
         return enif_make_badarg(env);
     }
-
-    // works
-    /*char* foo = "a";*/
-    /*printf("Can print chars: %s\r\n", foo);*/
-
     printf("Got chars: %s\r\n", chars);
 
     printf("Rendering chars\r\n");
