@@ -22,9 +22,9 @@
 #include FT_FREETYPE_H
 
 
-#define WIDTH   50
-#define HEIGHT  40
-#define SIZE    2000
+#define WIDTH   70
+#define HEIGHT  45
+#define SIZE    3150
 
 
 /* origin is the upper left corner */
@@ -58,7 +58,8 @@ void copy_bitmap(FT_Bitmap *bitmap,
 void draw_bitmap(FT_Bitmap*  bitmap,
                  unsigned char *image,
                  FT_Int      pen_x,
-                 FT_Int      pen_y) {
+                 FT_Int      pen_y,
+                 FT_Int      bearing) {
   FT_Int  i, j, p, q;
   // where we are in our binary
   FT_Int  x = pen_x >> 6;
@@ -71,6 +72,13 @@ void draw_bitmap(FT_Bitmap*  bitmap,
   FT_Int  y_max = y + h;
 
   FT_Int  index;
+
+  // converting from 26.6 to int
+  // and figuring out how much of the character needs to be below
+  // the base line
+  FT_Int shift_down = h - (bearing >> 6);
+  printf("Bearing is %d, shifting down (%d - %d) = %d\r\n",
+         bearing, h, (bearing >> 6), h - (bearing >> 6));
 
   /* for simplicity, we assume that `bitmap->pixel_mode' */
   /* is `FT_PIXEL_MODE_GRAY' (i.e., not a bitmap font)   */
@@ -101,20 +109,26 @@ void draw_bitmap(FT_Bitmap*  bitmap,
       // printf("image[%2d][%2d] |= bitmap->buffer[%2d * %2d + %2d]: %3d\r\n",
       //        j, i, q, bitmap->width, p, bitmap->buffer[q * bitmap->width + p]);
 
-      index = j * w + i;
-      //printf("image[%d] |= bitmap->buffer[%2d * %2d + %2d]: %3d (%2d)\r\n",
-      //       index,
-      //       q,
-      //       bitmap->width,
-      //       p,
-      //       bitmap->buffer[q * bitmap->width + p],
-      //       image[index]);
+
+      index = (j + shift_down) * WIDTH + i;
+      printf("image[%d * %d + %d = %d] |= bitmap->buffer[%2d * %2d + %2d]: %3d (%2d)\r\n",
+             j, WIDTH, i,
+             index,
+             q,
+             bitmap->width,
+             p,
+             bitmap->buffer[q * bitmap->width + p],
+             image[index]);
+
+      // I think this will blank out the previous characters
+      /*if(p > bitmap->width || q > bitmap->top){*/
+        /*continue;*/
+      /*}*/
 
       usleep(2500);
       /*image[j][i] |= bitmap->buffer[q * bitmap->width + p];*/
-      // FIXME I GET DIFFERENT VALUES EVERY TIME!
-      /*image[index] |= bitmap->buffer[q * w + p];*/
       image[index] = bitmap->buffer[q * w + p];
+      /*image[index] = bitmap->buffer[q * w + p];*/
       /*image[index] |= bitmap->buffer[index];*/
     }
     /*printf("\r\n");*/
@@ -234,7 +248,7 @@ void render_chars(char *text, int num_chars, unsigned char *image){
 
     // Copy the bitmap into the provided char array
     /*draw_bitmap(&slot->bitmap, pen.x, pen.y);*/
-    draw_bitmap(&slot->bitmap, image, pen.x, pen.y);
+    draw_bitmap(&slot->bitmap, image, pen.x, pen.y, slot->metrics.horiBearingY);
 
     printf("\r\n\r\n");
     usleep(2500);

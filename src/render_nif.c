@@ -20,8 +20,8 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
                                int argc,
                                const ERL_NIF_TERM argv[]) {
 
-    int pixelWidth = 50;
-    int pixelHeight = 40;
+    int pixelWidth = 70;
+    int pixelHeight = 70;
     int pixelSize = pixelWidth * pixelHeight;
 
     printf("render_nif.c - render_nif\r\n");
