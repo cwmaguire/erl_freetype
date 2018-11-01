@@ -4,6 +4,7 @@
  * I don't know what most of this does
  */
 #include <erl_nif.h>
+#include <unistd.h>
 
 extern void render_chars(char *chars,
                          int num_chars,
@@ -21,7 +22,7 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
                                const ERL_NIF_TERM argv[]) {
 
     int pixelWidth = 70;
-    int pixelHeight = 70;
+    int pixelHeight = 75;
     int pixelSize = pixelWidth * pixelHeight;
 
     printf("render_nif.c - render_nif\r\n");
@@ -31,9 +32,6 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     printf("Declare ErlNifBinary *bin\r\n");
     // A binary that can be managed by Erlang
     ErlNifBinary bin = {.data = (unsigned char *) NULL};
-    // TODO not sure if I need to allocate space here and also when
-    // I call enif_alloc_binary
-    bin.data = malloc(sizeof(char) * pixelSize);
     bin.size = sizeof(char) * pixelSize;
 
     printf("Declare char *chars\r\n");
@@ -45,6 +43,12 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     /*size_t s = bin.size;*/
     enif_alloc_binary(s, &bin);
     printf("Allocated Erlang binary\r\n");
+
+    printf("Clearing bin.data, size %d\r\n", (int) bin.size);
+    for(int i = 0; i < bin.size; i++){
+      bin.data[i] = 0;
+    }
+    printf("Cleared\r\n");
 
     if (!enif_get_int(env, argv[0], &num_chars)) {
         return enif_make_badarg(env);

@@ -23,8 +23,8 @@
 
 
 #define WIDTH   70
-#define HEIGHT  70
-#define SIZE    4900
+#define HEIGHT  75
+#define SIZE    5250
 
 
 /* origin is the upper left corner */
@@ -34,15 +34,6 @@ int size = HEIGHT * WIDTH;
 // can't use HEIGHT * WIDTH for some reason
 unsigned char image[SIZE];
 /*unsigned char image[HEIGHT * WIDTH];*/
-
-/* This is only using one dimension of the two
- * dimensional image */
-void copy_bitmap(FT_Bitmap *bitmap,
-                 unsigned char *dst){
-    for(int i = 0; i < HEIGHT * WIDTH; i++){
-      dst[i] = bitmap->buffer[i];
-    }
-}
 
 //From an example online
 // https://www.freetype.org/freetype2/docs/tutorial/example1.c
@@ -58,12 +49,14 @@ void copy_bitmap(FT_Bitmap *bitmap,
 void draw_bitmap(FT_Bitmap*  bitmap,
                  unsigned char *image,
                  FT_Int      pen_x,
-                 FT_Int      pen_y,
-                 FT_Int      bearing) {
+                 FT_Int      bitmap_top) {
   FT_Int  i, j, p, q;
+
   // where we are in our binary
   FT_Int  x = pen_x >> 6;
-  FT_Int  y = pen_y >> 6;
+
+  // translated from cartesian (y is up) to bitmap (y is down)
+  FT_Int  y = bitmap_top - 25;
   // the size of the glyph bitmap
   FT_Int  w = bitmap->width;
   FT_Int  h = bitmap->rows;
@@ -73,16 +66,6 @@ void draw_bitmap(FT_Bitmap*  bitmap,
 
   FT_Int  index;
 
-  // converting from 26.6 to int
-  // and figuring out how much of the character needs to be below
-  // the base line
-  FT_Int shift_down = h - (bearing >> 6);
-  printf("Bearing is %d, shifting down (%d - %d) = %d\r\n",
-         bearing, h, (bearing >> 6), h - (bearing >> 6));
-
-  /* for simplicity, we assume that `bitmap->pixel_mode' */
-  /* is `FT_PIXEL_MODE_GRAY' (i.e., not a bitmap font)   */
-
   // x and y come from our "pen" vector which we update
   // after every character to the start of the next
   // character.
@@ -90,56 +73,40 @@ void draw_bitmap(FT_Bitmap*  bitmap,
   // Here we're filling in our image starting at the current
   // x and y coordinates from our pen but we're starting at
   // 0,0 when referencing the current bitmap
+  // (In other words, it seems as if the bitmap translation does nothing)
   printf("Writing to image: (%d, %d) to (%d, %d)\r\n", x, y, x_max, y_max);
   for ( j = y, q = 0; j < y_max; j++, q++ )
   {
     for ( i = x, p = 0; i < x_max; i++, p++ )
     {
-      // when would i or j be less than 0?
-      // Maybe when our pen vector is screwed up?
-      // Maybe this is just doing clipping?
+      // Clip off at edges
       if ( i < 0 || j < 0 || i >= WIDTH || j >= HEIGHT )
         continue;
 
-      // why |= instead of just equals?
-      // This just references the global image
-      // q is the current y coordinate so 1 * bitmap->width + p
-      // is q rows plus p pixels into the (q+1) row
+      index = j * WIDTH + i;
 
-      // printf("image[%2d][%2d] |= bitmap->buffer[%2d * %2d + %2d]: %3d\r\n",
-      //        j, i, q, bitmap->width, p, bitmap->buffer[q * bitmap->width + p]);
-
-
-      index = (j + shift_down) * WIDTH + i;
-      //printf("image[%d * %d + %d = %d] |= bitmap->buffer[%2d * %2d + %2d]: %3d (%2d)\r\n",
+      // Print out all the details of each pixel as we draw it.
+      // Be prepared to scroll!
+      /*int bitmap_value = bitmap->buffer[q * bitmap->width + p];*/
+      //printf("image[%d * %d + %d = %d] |= bitmap->buffer[%2d * %2d + %2d]: %3d (%2d)",
       //       j, WIDTH, i,
       //       index,
       //       q,
       //       bitmap->width,
       //       p,
-      //       bitmap->buffer[q * bitmap->width + p],
+      //       bitmap_value,
+      //       //bitmap->buffer[q * bitmap->width + p],
       //       image[index]);
 
-      if(p > bitmap->width || q > bitmap->rows){
-        image[index] = 0;
-        continue;
-      }
+      // The console was falling behind and screwing up
+      // When there was too much printf output
+      // usleep(2500);
 
-      usleep(2500);
-      /*image[j][i] |= bitmap->buffer[q * bitmap->width + p];*/
-      image[index] |= bitmap->buffer[q * w + p];
-      /*image[index] = bitmap->buffer[q * w + p];*/
-      /*image[index] |= bitmap->buffer[index];*/
+      image[index] = bitmap->buffer[q * w + p];
     }
-    /*printf("\r\n");*/
 
   }
-  /*for(i = 0; i < SIZE; i++){*/
-    /*printf("%4d", image[i]);*/
-  /*}*/
-  /*printf("\r\n\r\n");*/
 }
-
 
 void render_chars(char *text, int num_chars, unsigned char *image){
   FT_Library    library;
@@ -154,12 +121,12 @@ void render_chars(char *text, int num_chars, unsigned char *image){
   int           target_height;
   int           n;
 
-
   target_height = HEIGHT;
 
   printf("\r\n\r\nSTARTING\r\n\r\n");
 
-  error = FT_Init_FreeType(&library);              /* initialize library */
+  /* initialize library */
+  error = FT_Init_FreeType(&library);
   printf("Init FreeType error %d\r\n", error);
   /* error handling omitted */
 
@@ -196,28 +163,18 @@ void render_chars(char *text, int num_chars, unsigned char *image){
   slot = face->glyph;
 
   /* the pen position in 26.6 cartesian space coordinates; */
-  /* start at (300,200) relative to the upper left corner  */
-  pen.x = 0 * 64;
+  // shift << 6 or multiply by 64 if these aren't 0
+  pen.x = 0;
   pen.y = 0;
-  /*pen.y = (target_height - 200) * 64;*/
-
-  /*FT_Vector     zero;      [> untransformed origin  <]*/
-  /*pen.x = 0;*/
-  /*pen.y = 0;*/
 
   printf("num_chars: %d\r\n", num_chars);
   for (n = 0; n < num_chars; n++){
-    // I feel like this is continually moving where to draw the
-    // characters within the same bitmap
-    // Doesn't seem to be doing anything, when I did two characters
-    // it just overwrote the first one
-    //
-    // Ah, I think this just changes the numbers, not the actual
-    // bitmap that's drawn.
+    // transform only seems to change the metrics, not
+    // where in memory the bitmap is
     FT_Set_Transform(face, 0, &pen);
     printf("after FT_Set_Transform\r\n");
 
-    /* load glyph image into the slot (erase previous one) */
+    // load glyph image into the slot (erase previous one)
     error = FT_Load_Char(face, text[n], FT_LOAD_RENDER);
     printf("FT_Load_Char error %d\r\n", error);
     if (error){
@@ -247,19 +204,21 @@ void render_chars(char *text, int num_chars, unsigned char *image){
     printf("slot->metrics.vertAdvance = %lu\r\n", slot->metrics.vertAdvance >> 6);
 
     // Copy the bitmap into the provided char array
-    /*draw_bitmap(&slot->bitmap, pen.x, pen.y);*/
-    draw_bitmap(&slot->bitmap, image, pen.x, pen.y, slot->metrics.horiBearingY);
+    // slot->bitmap_top is how high the top of the bitmap is off the
+    // baseline.
+    draw_bitmap(&slot->bitmap, image, pen.x, HEIGHT - slot->bitmap_top);
 
     int val;
     printf("\r\n\r\n");
     usleep(2500);
     for(int y = 0; y < HEIGHT; y++){
+        printf("%3d", y + 1);
         for(int x = 0; x < WIDTH; x++){
-          val = (int)(image[y * WIDTH + x] / 28.3);
+          val = (int)(image[y * WIDTH + x] / 2.6);
           if(val){
-            printf("%1d", val);
+            printf("%2d", val);
           }else{
-            printf(" ");
+            printf("  ");
           }
         usleep(500);
       }
@@ -268,14 +227,12 @@ void render_chars(char *text, int num_chars, unsigned char *image){
     printf("\r\n");
     usleep(2500);
 
-    /* increment pen (point) position */
+    // Increment where we are in the target image
     pen.x += slot->advance.x;
-    /* I think this is irrelevant for a horizontal font.
-     * It won't change */
+    // We're using a horizontal font so this won't move
+    // Unless we're doing multiple lines of text
     pen.y += slot->advance.y;
-
   }
-
 
   FT_Done_Face    (face);
   FT_Done_FreeType(library);
