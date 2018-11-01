@@ -23,8 +23,8 @@
 
 
 #define WIDTH   70
-#define HEIGHT  45
-#define SIZE    3150
+#define HEIGHT  70
+#define SIZE    4900
 
 
 /* origin is the upper left corner */
@@ -111,23 +111,23 @@ void draw_bitmap(FT_Bitmap*  bitmap,
 
 
       index = (j + shift_down) * WIDTH + i;
-      printf("image[%d * %d + %d = %d] |= bitmap->buffer[%2d * %2d + %2d]: %3d (%2d)\r\n",
-             j, WIDTH, i,
-             index,
-             q,
-             bitmap->width,
-             p,
-             bitmap->buffer[q * bitmap->width + p],
-             image[index]);
+      //printf("image[%d * %d + %d = %d] |= bitmap->buffer[%2d * %2d + %2d]: %3d (%2d)\r\n",
+      //       j, WIDTH, i,
+      //       index,
+      //       q,
+      //       bitmap->width,
+      //       p,
+      //       bitmap->buffer[q * bitmap->width + p],
+      //       image[index]);
 
-      // I think this will blank out the previous characters
-      /*if(p > bitmap->width || q > bitmap->top){*/
-        /*continue;*/
-      /*}*/
+      if(p > bitmap->width || q > bitmap->rows){
+        image[index] = 0;
+        continue;
+      }
 
       usleep(2500);
       /*image[j][i] |= bitmap->buffer[q * bitmap->width + p];*/
-      image[index] = bitmap->buffer[q * w + p];
+      image[index] |= bitmap->buffer[q * w + p];
       /*image[index] = bitmap->buffer[q * w + p];*/
       /*image[index] |= bitmap->buffer[index];*/
     }
@@ -250,13 +250,22 @@ void render_chars(char *text, int num_chars, unsigned char *image){
     /*draw_bitmap(&slot->bitmap, pen.x, pen.y);*/
     draw_bitmap(&slot->bitmap, image, pen.x, pen.y, slot->metrics.horiBearingY);
 
+    int val;
     printf("\r\n\r\n");
     usleep(2500);
-    for(int i = 0; i < SIZE; i++){
-      printf("%4d", image[i]);
-      usleep(500);
+    for(int y = 0; y < HEIGHT; y++){
+        for(int x = 0; x < WIDTH; x++){
+          val = (int)(image[y * WIDTH + x] / 28.3);
+          if(val){
+            printf("%1d", val);
+          }else{
+            printf(" ");
+          }
+        usleep(500);
+      }
+      printf("\r\n");
     }
-    printf("\r\n\r\n");
+    printf("\r\n");
     usleep(2500);
 
     /* increment pen (point) position */
