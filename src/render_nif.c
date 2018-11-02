@@ -6,7 +6,7 @@
 #include <erl_nif.h>
 #include <unistd.h>
 
-extern void render_chars(char *chars,
+extern int* render_chars(char *chars,
                          int num_chars,
                          unsigned char *image);
 
@@ -70,11 +70,20 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     printf("Got chars: %s\r\n", chars);
 
     printf("Rendering chars\r\n");
-    render_chars(chars, num_chars, bin.data);
+    int* vector;
+    vector = render_chars(chars, num_chars, bin.data);
     free(chars);
 
+    ERL_NIF_TERM width = enif_make_int(env, vector[0]);
+    ERL_NIF_TERM height = enif_make_int(env, vector[1]);
+    ERL_NIF_TERM pixel_data = enif_make_binary(env, &bin);
+    ERL_NIF_TERM tuple = enif_make_tuple3(env,
+                                          pixel_data,
+                                          width,
+                                          height);
+
     // transfer ownership of bin to Erlang and return
-    return enif_make_binary(env, &bin);
+    return tuple;
 }
 
 /*

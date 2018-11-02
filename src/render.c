@@ -108,7 +108,7 @@ void draw_bitmap(FT_Bitmap*  bitmap,
   }
 }
 
-void render_chars(char *text, int num_chars, unsigned char *image){
+int* render_chars(char *text, int num_chars, unsigned char *image){
   FT_Library    library;
   FT_Face       face;
 
@@ -233,6 +233,11 @@ void render_chars(char *text, int num_chars, unsigned char *image){
     // Unless we're doing multiple lines of text
     pen.y += slot->advance.y;
   }
+
+  static int dimension[2];
+  dimension[0] = pen.x >> 6;
+  dimension[1] = pen.y >> 6;
+  return dimension;
 
   FT_Done_Face    (face);
   FT_Done_FreeType(library);
