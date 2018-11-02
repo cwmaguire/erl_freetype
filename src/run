@@ -4,7 +4,7 @@
 
 main(_) ->
     code:load_abs("render_nif.erl"),
-    {Bin, Width, Height} = render_nif:render(2, "ij"),
+    {Bin, Width, Height} = render_nif:render(3, "Zij"),
     %Bin = render_nif:render(4, "Same"),
     %io:format("Bin: ~p~nSize: ~p~n", [Bin, size(Bin)]),
     io:format("Width: ~p, Height: ~p~n", [Width, Height]),

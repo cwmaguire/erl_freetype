@@ -22,9 +22,9 @@
 #include FT_FREETYPE_H
 
 
-#define WIDTH   70
+#define WIDTH   110
 #define HEIGHT  75
-#define SIZE    5250
+#define SIZE    8250
 
 
 /* origin is the upper left corner */
@@ -120,6 +120,7 @@ int* render_chars(char *text, int num_chars, unsigned char *image){
   char*         filename = "/Library/Fonts/Courier New.ttf";
   int           target_height;
   int           n;
+  int           max_height = 0;
 
   target_height = HEIGHT;
 
@@ -184,6 +185,7 @@ int* render_chars(char *text, int num_chars, unsigned char *image){
     }
     printf("after FT_Load_Char\r\n");
 
+    printf("Max height: %d\r\n", max_height);
     printf("pen.x = %lu\r\n", pen.x >> 6);
     printf("pen.y = %lu\r\n", pen.y >> 6);
     printf("slot->advance.x = %lu\r\n", slot->advance.x >> 6);
@@ -220,7 +222,7 @@ int* render_chars(char *text, int num_chars, unsigned char *image){
           }else{
             printf("  ");
           }
-        usleep(500);
+        usleep(50);
       }
       printf("\r\n");
     }
@@ -232,11 +234,17 @@ int* render_chars(char *text, int num_chars, unsigned char *image){
     // We're using a horizontal font so this won't move
     // Unless we're doing multiple lines of text
     pen.y += slot->advance.y;
+
+    if((slot->metrics.height >> 6) > max_height){
+      printf("Updating max height from %d to %d\r\n",
+             max_height, (int) slot->metrics.height >> 6);
+      max_height = slot->metrics.height >> 6;
+    }
   }
 
   static int dimension[2];
   dimension[0] = pen.x >> 6;
-  dimension[1] = pen.y >> 6;
+  dimension[1] = max_height;
   return dimension;
 
   FT_Done_Face    (face);

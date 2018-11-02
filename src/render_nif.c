@@ -21,7 +21,9 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
                                int argc,
                                const ERL_NIF_TERM argv[]) {
 
-    int pixelWidth = 70;
+    // TODO figure out a way to calculate this for the
+    // font we choose
+    int pixelWidth = 110;
     int pixelHeight = 75;
     int pixelSize = pixelWidth * pixelHeight;
 
@@ -37,27 +39,10 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     printf("Declare char *chars\r\n");
     char *chars = NULL;
 
-    printf("Allocating Erlang binary\r\n");
-    // allocate a Erlang binary for each alpha pixel
-    size_t s = sizeof(char) * pixelSize;
-    /*size_t s = bin.size;*/
-    enif_alloc_binary(s, &bin);
-    printf("Allocated Erlang binary\r\n");
-
-    printf("Clearing bin.data, size %d\r\n", (int) bin.size);
-    for(int i = 0; i < bin.size; i++){
-      bin.data[i] = 0;
-    }
-    printf("Cleared\r\n");
-
     if (!enif_get_int(env, argv[0], &num_chars)) {
         return enif_make_badarg(env);
     }
     printf("Got num_chars: %d\r\n", num_chars);
-
-    // prints 2
-    // int size = sizeof(char) * (num_chars + 1);
-    // printf("Size of char array: %d\r\n", size);
 
     chars = (char*) malloc(sizeof(char) * (num_chars + 1));
     int result = enif_get_string(env, argv[1], chars, num_chars + 1, ERL_NIF_LATIN1);
@@ -69,18 +54,46 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     }
     printf("Got chars: %s\r\n", chars);
 
-    printf("Rendering chars\r\n");
-    int* vector;
-    vector = render_chars(chars, num_chars, bin.data);
-    free(chars);
+    // TODO Figure out if I need to keep creating a new
+    // environment so I can keep creating new ERL_NIF_TERMS, copying
+    // the old list to the new environment and clearing the old terms.
+    // I don't know if, after I've done enif_make_X if I need to release
+    // the object or if Erlang will GC it because it's an enif_make call.
 
-    ERL_NIF_TERM width = enif_make_int(env, vector[0]);
-    ERL_NIF_TERM height = enif_make_int(env, vector[1]);
-    ERL_NIF_TERM pixel_data = enif_make_binary(env, &bin);
-    ERL_NIF_TERM tuple = enif_make_tuple3(env,
-                                          pixel_data,
-                                          width,
-                                          height);
+    ErlNifEnv temp_env = enif_alloc_env();
+
+    ERL_NIF_TERM rendered_chars = enif_make_list(env, 0);
+
+    for(int i = 0; i < num_chars; i++){
+
+        printf("Allocating Erlang binary\r\n");
+        // allocate a Erlang binary to hold alpha pixels
+        size_t s = sizeof(char) * pixelSize;
+        enif_alloc_binary(s, &bin);
+        printf("Allocated Erlang binary\r\n");
+
+        printf("Clearing bin.data, size %d\r\n", (int) bin.size);
+        for(int i = 0; i < bin.size; i++){
+          bin.data[i] = 0;
+        }
+        printf("Cleared\r\n");
+
+        printf("Rendering chars\r\n");
+        int* vector;
+        vector = render_chars(chars, num_chars, bin.data);
+        free(chars);
+
+
+        ERL_NIF_TERM width = enif_make_int(env, vector[0]);
+        ERL_NIF_TERM height = enif_make_int(env, vector[1]);
+        ERL_NIF_TERM pixel_data = enif_make_binary(env, &bin);
+        ERL_NIF_TERM tuple = enif_make_tuple3(env,
+                                              pixel_data,
+                                              width,
+                                              height);
+
+        enif_make_list_cell(temp_env, tuple
+    }
 
     // transfer ownership of bin to Erlang and return
     return tuple;
