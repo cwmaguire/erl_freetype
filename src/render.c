@@ -69,14 +69,12 @@ int* render_chars(char *text, unsigned char *image){
   FT_Library    library;
   FT_Face       face;
   FT_GlyphSlot  slot;
-  FT_Vector     pen;      /* untransformed origin  */
+  /*FT_Vector     pen;      [> untransformed origin  <]*/
   FT_Error      error;
 
   /* Vim might be using menlo */
   char* filename = "/Library/Fonts/Courier New.ttf";
   static int error_dimensions[3] = {-1, -1, -1};
-
-  printf("\r\n\r\nSTARTING\r\n\r\n");
 
   /* initialize library */
   error = FT_Init_FreeType(&library);
@@ -127,6 +125,7 @@ int* render_chars(char *text, unsigned char *image){
     return error_dimensions;
   }
 
+  /*
   printf("pen.x = %lu\r\n", pen.x >> 6);
   printf("pen.y = %lu\r\n", pen.y >> 6);
   printf("slot->advance.x = %lu\r\n", slot->advance.x >> 6);
@@ -145,12 +144,14 @@ int* render_chars(char *text, unsigned char *image){
   printf("slot->metrics.vertBearingX = %lu\r\n", slot->metrics.vertBearingX >> 6);
   printf("slot->metrics.vertBearingY = %lu\r\n", slot->metrics.vertBearingY >> 6);
   printf("slot->metrics.vertAdvance = %lu\r\n", slot->metrics.vertAdvance >> 6);
+  */
 
   // Copy the bitmap into the provided char array
   // slot->bitmap_top is how high the top of the bitmap is off the
   // baseline.
   draw_bitmap(&slot->bitmap, image);
 
+  /*
   int val;
   printf("\r\n\r\n");
   usleep(2500);
@@ -168,6 +169,7 @@ int* render_chars(char *text, unsigned char *image){
     printf("\r\n");
   }
   printf("\r\n");
+  */
 
   static int dimension[3];
   dimension[0] = slot->bitmap.width;

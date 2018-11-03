@@ -26,12 +26,10 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     int pixelHeight = 75;
     int pixelSize = pixelWidth * pixelHeight;
 
-    printf("Declare ErlNifBinary *bin\r\n");
     // A binary that can be managed by Erlang
     ErlNifBinary bin = {.data = (unsigned char *) NULL};
     bin.size = sizeof(char) * pixelSize;
 
-    printf("Declare char *char_\r\n");
     // TODO make this an int
     char *char_ = NULL;
     char_ = (char*) malloc(sizeof(char) * 2);
@@ -41,19 +39,14 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
         return enif_make_badarg(env);
     }
 
-    printf("Allocating Erlang binary\r\n");
     // allocate a Erlang binary to hold alpha pixels
     size_t s = sizeof(char) * pixelSize;
     enif_alloc_binary(s, &bin);
-    printf("Allocated Erlang binary\r\n");
 
-    printf("Clearing bin.data, size %d\r\n", (int) bin.size);
     for(int i = 0; i < bin.size; i++){
       bin.data[i] = 0;
     }
-    printf("Cleared\r\n");
 
-    printf("Rendering char\r\n");
     int* dimensions;
     dimensions = render_chars(char_, bin.data);
     free(char_);
