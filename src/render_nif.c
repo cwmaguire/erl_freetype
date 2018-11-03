@@ -6,19 +6,12 @@
 #include <erl_nif.h>
 #include <unistd.h>
 
-extern int* render_chars(char *char_,
-                         unsigned char *image);
+extern int* render_char(char *char_,
+                        unsigned char *image);
 
-// ERL_NIF_API_FUNC_DECL(int,
-//                       enif_get_string,
-//                       (ErlNifEnv*,
-//                        ERL_NIF_TERM list,
-//                        char* buf,
-//                        unsigned len,
-//                        ErlNifCharEncoding));
-static ERL_NIF_TERM render_nif(ErlNifEnv* env,
-                               int argc,
-                               const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM render_char(ErlNifEnv* env,
+                                int argc,
+                                const ERL_NIF_TERM argv[]) {
 
     // TODO figure out a way to calculate this for the
     // font we choose
@@ -61,22 +54,11 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
                                           width,
                                           height,
                                           top);
-
-    // transfer ownership of bin to Erlang and return
     return tuple;
 }
 
-/*
-typedef struct {
-    const char* name;
-    unsigned arity;
-    // Function pointer
-    ERL_NIF_TERM (*fptr)(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
-    unsigned flags;
-} ErlNifFunc;
-*/
 static ErlNifFunc nif_funcs[] = {
-    {"render", 2, render_nif},
+    {"render", 1, render_nif},
 };
 
 // Module, function array, load, NULL, upgrade, unload

@@ -21,15 +21,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-
 #define WIDTH   110
 #define HEIGHT  75
 #define SIZE    8250
-
-
-/* origin is the upper left corner */
-/*unsigned char image[HEIGHT][WIDTH];*/
-int size = HEIGHT * WIDTH;
 
 // can't use HEIGHT * WIDTH for some reason
 unsigned char image[SIZE];
@@ -65,7 +59,7 @@ void draw_bitmap(FT_Bitmap*  bitmap,
   }
 }
 
-int* render_chars(char *text, unsigned char *image){
+int* render_char(char *text, unsigned char *image){
   FT_Library    library;
   FT_Face       face;
   FT_GlyphSlot  slot;
