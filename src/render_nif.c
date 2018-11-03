@@ -6,8 +6,7 @@
 #include <erl_nif.h>
 #include <unistd.h>
 
-extern int* render_chars(char *chars,
-                         int num_chars,
+extern int* render_chars(char *char_,
                          unsigned char *image);
 
 // ERL_NIF_API_FUNC_DECL(int,
@@ -27,73 +26,48 @@ static ERL_NIF_TERM render_nif(ErlNifEnv* env,
     int pixelHeight = 75;
     int pixelSize = pixelWidth * pixelHeight;
 
-    printf("render_nif.c - render_nif\r\n");
-    /*unsigned char *bitmap;*/
-    int num_chars = 0;
-
     printf("Declare ErlNifBinary *bin\r\n");
     // A binary that can be managed by Erlang
     ErlNifBinary bin = {.data = (unsigned char *) NULL};
     bin.size = sizeof(char) * pixelSize;
 
-    printf("Declare char *chars\r\n");
-    char *chars = NULL;
-
-    if (!enif_get_int(env, argv[0], &num_chars)) {
-        return enif_make_badarg(env);
-    }
-    printf("Got num_chars: %d\r\n", num_chars);
-
-    chars = (char*) malloc(sizeof(char) * (num_chars + 1));
-    int result = enif_get_string(env, argv[1], chars, num_chars + 1, ERL_NIF_LATIN1);
-    printf("Result of enif_get_string: %d\r\n", result);
-
+    printf("Declare char *char_\r\n");
+    // TODO make this an int
+    char *char_ = NULL;
+    char_ = (char*) malloc(sizeof(char) * 2);
+    int result = enif_get_string(env, argv[1], char_, 2, ERL_NIF_LATIN1);
     if (!result) {
-        printf("Failed to get chars\r\n");
+        printf("Failed to get char_: %d\r\n", result);
         return enif_make_badarg(env);
     }
-    printf("Got chars: %s\r\n", chars);
 
-    // TODO Figure out if I need to keep creating a new
-    // environment so I can keep creating new ERL_NIF_TERMS, copying
-    // the old list to the new environment and clearing the old terms.
-    // I don't know if, after I've done enif_make_X if I need to release
-    // the object or if Erlang will GC it because it's an enif_make call.
+    printf("Allocating Erlang binary\r\n");
+    // allocate a Erlang binary to hold alpha pixels
+    size_t s = sizeof(char) * pixelSize;
+    enif_alloc_binary(s, &bin);
+    printf("Allocated Erlang binary\r\n");
 
-    ErlNifEnv temp_env = enif_alloc_env();
-
-    ERL_NIF_TERM rendered_chars = enif_make_list(env, 0);
-
-    for(int i = 0; i < num_chars; i++){
-
-        printf("Allocating Erlang binary\r\n");
-        // allocate a Erlang binary to hold alpha pixels
-        size_t s = sizeof(char) * pixelSize;
-        enif_alloc_binary(s, &bin);
-        printf("Allocated Erlang binary\r\n");
-
-        printf("Clearing bin.data, size %d\r\n", (int) bin.size);
-        for(int i = 0; i < bin.size; i++){
-          bin.data[i] = 0;
-        }
-        printf("Cleared\r\n");
-
-        printf("Rendering chars\r\n");
-        int* vector;
-        vector = render_chars(chars, num_chars, bin.data);
-        free(chars);
-
-
-        ERL_NIF_TERM width = enif_make_int(env, vector[0]);
-        ERL_NIF_TERM height = enif_make_int(env, vector[1]);
-        ERL_NIF_TERM pixel_data = enif_make_binary(env, &bin);
-        ERL_NIF_TERM tuple = enif_make_tuple3(env,
-                                              pixel_data,
-                                              width,
-                                              height);
-
-        enif_make_list_cell(temp_env, tuple
+    printf("Clearing bin.data, size %d\r\n", (int) bin.size);
+    for(int i = 0; i < bin.size; i++){
+      bin.data[i] = 0;
     }
+    printf("Cleared\r\n");
+
+    printf("Rendering char\r\n");
+    int* dimensions;
+    dimensions = render_chars(char_, bin.data);
+    free(char_);
+
+
+    ERL_NIF_TERM width = enif_make_int(env, dimensions[0]);
+    ERL_NIF_TERM height = enif_make_int(env, dimensions[1]);
+    ERL_NIF_TERM top = enif_make_int(env, dimensions[2]);
+    ERL_NIF_TERM pixel_data = enif_make_binary(env, &bin);
+    ERL_NIF_TERM tuple = enif_make_tuple4(env,
+                                          pixel_data,
+                                          width,
+                                          height,
+                                          top);
 
     // transfer ownership of bin to Erlang and return
     return tuple;
