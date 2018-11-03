@@ -1,5 +1,5 @@
 -module(render_char).
--on_load(init/1).
+-on_load(on_load/0).
 -export([render_char/1]).
 
 on_load(_) ->
