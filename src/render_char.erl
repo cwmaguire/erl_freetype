@@ -3,7 +3,7 @@
 -export([render_char/1]).
 
 on_load() ->
-    ok = erlang:load_nif("./render_nif", 0).
+    ok = erlang:load_nif("./ebin/render_nif", 0).
 
 %% This will be replaced when the NIF is loaded to
 %% override this function

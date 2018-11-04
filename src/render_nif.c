@@ -25,7 +25,7 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
     // TODO make this an int
     char *char_ = NULL;
     char_ = (char*) malloc(sizeof(char) * 2);
-    int result = enif_get_string(env, argv[1], char_, 2, ERL_NIF_LATIN1);
+    int result = enif_get_string(env, argv[0], char_, 2, ERL_NIF_LATIN1);
     if (!result) {
         printf("Failed to get char_: %d\r\n", result);
         return enif_make_badarg(env);
@@ -57,7 +57,7 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
 }
 
 static ErlNifFunc nif_funcs[] = {
-    {"render", 1, render_char_nif},
+    {"render_char", 1, render_char_nif},
 };
 
 // Module, function array, load, NULL, upgrade, unload
