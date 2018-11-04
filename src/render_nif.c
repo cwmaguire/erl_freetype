@@ -9,9 +9,9 @@
 extern int* render_char(char *char_,
                         unsigned char *image);
 
-static ERL_NIF_TERM render_char(ErlNifEnv* env,
-                                int argc,
-                                const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
+                                    int argc,
+                                    const ERL_NIF_TERM argv[]) {
 
     // TODO figure out a way to calculate this for the
     // font we choose
@@ -41,7 +41,7 @@ static ERL_NIF_TERM render_char(ErlNifEnv* env,
     }
 
     int* dimensions;
-    dimensions = render_chars(char_, bin.data);
+    dimensions = render_char(char_, bin.data);
     free(char_);
 
 
@@ -58,8 +58,8 @@ static ERL_NIF_TERM render_char(ErlNifEnv* env,
 }
 
 static ErlNifFunc nif_funcs[] = {
-    {"render", 1, render_nif},
+    {"render", 1, render_char_nif},
 };
 
 // Module, function array, load, NULL, upgrade, unload
-ERL_NIF_INIT(render_nif, nif_funcs, NULL, NULL, NULL, NULL)
+ERL_NIF_INIT(render_char, nif_funcs, NULL, NULL, NULL, NULL)
