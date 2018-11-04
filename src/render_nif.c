@@ -12,7 +12,6 @@ extern int* render_char(char *char_,
 static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
                                     int argc,
                                     const ERL_NIF_TERM argv[]) {
-
     // TODO figure out a way to calculate this for the
     // font we choose
     int pixelWidth = 110;
