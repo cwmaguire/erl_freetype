@@ -2,7 +2,7 @@ render_nif: render.c render_nif.c
 	clang -Wall \
 		-Werror \
 		-include allheads.h \
-		-o render_nif.so \
+		-o ../ebin/render_nif.so \
 		-fPIC \
 		-v \
 		-undefined dynamic_lookup \
