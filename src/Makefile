@@ -1,4 +1,4 @@
-render_nif: render.c render_nif.c
+../ebin/render_nif.so: render.c render_nif.c
 	clang -Wall \
 		-Werror \
 		-include allheads.h \
