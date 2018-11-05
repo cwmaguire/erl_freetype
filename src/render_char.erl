@@ -3,7 +3,8 @@
 -export([render_char/1]).
 
 on_load() ->
-    ok = erlang:load_nif("./ebin/render_nif", 0).
+    NifPath = os:getenv("NIF_PATH", "./ebin/render_nif"),
+    ok = erlang:load_nif(NifPath, 0).
 
 %% This will be replaced when the NIF is loaded to
 %% override this function
