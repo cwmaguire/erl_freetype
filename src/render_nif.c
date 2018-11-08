@@ -47,12 +47,14 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
     ERL_NIF_TERM width = enif_make_int(env, dimensions[0]);
     ERL_NIF_TERM height = enif_make_int(env, dimensions[1]);
     ERL_NIF_TERM top = enif_make_int(env, dimensions[2]);
+    ERL_NIF_TERM bin_width = enif_make_int(env, pixelWidth);
     ERL_NIF_TERM pixel_data = enif_make_binary(env, &bin);
-    ERL_NIF_TERM tuple = enif_make_tuple4(env,
+    ERL_NIF_TERM tuple = enif_make_tuple5(env,
                                           pixel_data,
                                           width,
                                           height,
-                                          top);
+                                          top,
+                                          bin_width);
     return tuple;
 }
 
