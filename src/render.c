@@ -61,7 +61,8 @@ void draw_bitmap(FT_Bitmap*  bitmap,
 
 int* render_char(char *text,
                  char *fontPath,
-                 unsigned char *image){
+                 unsigned char *image,
+                 int *fontSize){
   FT_Library    library;
   FT_Face       face;
   FT_GlyphSlot  slot;
@@ -103,7 +104,7 @@ int* render_char(char *text,
   /* The " * 64 " is to shift the specified point size left
    * so that it isn't a fraction (i.e. shift 6 places) */
   /* use 50pt at 100dpi */
-  error = FT_Set_Char_Size(face, 50 * 64, 0, 100, 0);
+  error = FT_Set_Char_Size(face, *fontSize * 64, 0, 100, 0);
   if (error){
     printf("FT_Set_Char_Size error %d\r\n", error);
     return error_dimensions;

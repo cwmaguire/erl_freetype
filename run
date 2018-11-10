@@ -12,7 +12,7 @@ render_char(Char) ->
     io:format("Rendering ~p~n", [Char]),
     FontPath = "/System/Library/Fonts/Menlo.ttc",
     {Bin, Width, Height, Top, BinWidth}
-        = render_char:render_char([Char], length(FontPath), FontPath),
+        = render_char:render_char([Char], length(FontPath), FontPath, 12),
     io:format("~p: w = ~p, h = ~p, t = ~p, bw = ~p~n",
               [[Char], Width, Height, Top, BinWidth]),
     file:write_file([Char | ".bin"], Bin).

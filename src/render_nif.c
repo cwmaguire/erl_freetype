@@ -8,7 +8,8 @@
 
 extern int* render_char(char *char_,
                         char *fontPath,
-                        unsigned char *image);
+                        unsigned char *image,
+                        int *fontSize);
 
 static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
                                     int argc,
@@ -52,6 +53,15 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
     }
     /*printf("Font path: >>%s<<\r\n", fontPath);*/
 
+    int *fontSize = NULL;
+    fontSize = (int*) calloc(sizeof(int), 0);
+    result = enif_get_int(env, argv[3], fontSize);
+    if (!result) {
+        printf("Failed to get font size: %d\r\n", result);
+        return enif_make_badarg(env);
+    }
+    /*printf("Font path string size is %d\r\n", *fontPathSize);*/
+
     // allocate a Erlang binary to hold alpha pixels
     size_t s = sizeof(char) * pixelSize;
     enif_alloc_binary(s, &bin);
@@ -61,7 +71,7 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
     }
 
     int* dimensions;
-    dimensions = render_char(char_, fontPath, bin.data);
+    dimensions = render_char(char_, fontPath, bin.data, fontSize);
 
     /*printf("Got dimensions from rendered char\r\n");*/
     free(char_);
@@ -93,7 +103,7 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
 }
 
 static ErlNifFunc nif_funcs[] = {
-    {"render_char", 3, render_char_nif},
+    {"render_char", 4, render_char_nif},
 };
 
 // Module, function array, load, NULL, upgrade, unload
