@@ -76,14 +76,14 @@ int* render_char(char *text,
     printf("Init FreeType error %d\r\n", error);
     return error_dimensions;
   }
-  printf("Library initialized\r\n");
+  /*printf("Library initialized\r\n");*/
 
   error = FT_New_Face(library, fontPath, 0, &face);
   if(error){
     printf("New face error %d\r\n", error);
     return error_dimensions;
   }
-  printf("Font face loaded\r\n");
+  /*printf("Font face loaded\r\n");*/
   /* error handling omitted */
 
   /* When I render an 'S' I'm getting a 30 pixel wide
@@ -108,7 +108,7 @@ int* render_char(char *text,
     printf("FT_Set_Char_Size error %d\r\n", error);
     return error_dimensions;
   }
-  printf("Set char size\r\n");
+  /*printf("Set char size\r\n");*/
 
   /* cmap selection omitted;                                        */
   /* for simplicity we assume that the font contains a Unicode cmap */
@@ -121,7 +121,7 @@ int* render_char(char *text,
     printf("FT_Load_Char error %d\r\n", error);
     return error_dimensions;
   }
-  printf("Loaded char\r\n");
+  /*printf("Loaded char\r\n");*/
 
   /*
   printf("pen.x = %lu\r\n", pen.x >> 6);
@@ -148,7 +148,7 @@ int* render_char(char *text,
   // slot->bitmap_top is how high the top of the bitmap is off the
   // baseline.
   draw_bitmap(&slot->bitmap, image);
-  printf("Drew bitmap\r\n");
+  /*printf("Drew bitmap\r\n");*/
 
   /*
   int val;
@@ -177,7 +177,7 @@ int* render_char(char *text,
 
   FT_Done_Face    (face);
   FT_Done_FreeType(library);
-  printf("Freed face and library\r\n");
+  /*printf("Freed face and library\r\n");*/
 
   return dimension;
 }

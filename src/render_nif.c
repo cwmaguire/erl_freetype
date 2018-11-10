@@ -63,7 +63,7 @@ static ERL_NIF_TERM render_char_nif(ErlNifEnv* env,
     int* dimensions;
     dimensions = render_char(char_, fontPath, bin.data);
 
-    printf("Got dimensions from rendered char\r\n");
+    /*printf("Got dimensions from rendered char\r\n");*/
     free(char_);
     /*printf("Freed char_\r\n");*/
     free(fontPathSize);
