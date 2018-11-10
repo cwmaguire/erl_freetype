@@ -59,15 +59,15 @@ void draw_bitmap(FT_Bitmap*  bitmap,
   }
 }
 
-int* render_char(char *text, unsigned char *image){
+int* render_char(char *text,
+                 char *fontPath,
+                 unsigned char *image){
   FT_Library    library;
   FT_Face       face;
   FT_GlyphSlot  slot;
-  /*FT_Vector     pen;      [> untransformed origin  <]*/
   FT_Error      error;
 
   /* Vim might be using menlo */
-  char* filename = "/Library/Fonts/Courier New.ttf";
   static int error_dimensions[3] = {-1, -1, -1};
 
   /* initialize library */
@@ -76,12 +76,14 @@ int* render_char(char *text, unsigned char *image){
     printf("Init FreeType error %d\r\n", error);
     return error_dimensions;
   }
+  printf("Library initialized\r\n");
 
-  error = FT_New_Face(library, filename, 0, &face);
+  error = FT_New_Face(library, fontPath, 0, &face);
   if(error){
     printf("New face error %d\r\n", error);
     return error_dimensions;
   }
+  printf("Font face loaded\r\n");
   /* error handling omitted */
 
   /* When I render an 'S' I'm getting a 30 pixel wide
@@ -106,6 +108,7 @@ int* render_char(char *text, unsigned char *image){
     printf("FT_Set_Char_Size error %d\r\n", error);
     return error_dimensions;
   }
+  printf("Set char size\r\n");
 
   /* cmap selection omitted;                                        */
   /* for simplicity we assume that the font contains a Unicode cmap */
@@ -118,6 +121,7 @@ int* render_char(char *text, unsigned char *image){
     printf("FT_Load_Char error %d\r\n", error);
     return error_dimensions;
   }
+  printf("Loaded char\r\n");
 
   /*
   printf("pen.x = %lu\r\n", pen.x >> 6);
@@ -144,6 +148,7 @@ int* render_char(char *text, unsigned char *image){
   // slot->bitmap_top is how high the top of the bitmap is off the
   // baseline.
   draw_bitmap(&slot->bitmap, image);
+  printf("Drew bitmap\r\n");
 
   /*
   int val;
@@ -169,8 +174,10 @@ int* render_char(char *text, unsigned char *image){
   dimension[0] = slot->bitmap.width;
   dimension[1] = slot->bitmap.rows;
   dimension[2] = slot->bitmap_top;
-  return dimension;
 
   FT_Done_Face    (face);
   FT_Done_FreeType(library);
+  printf("Freed face and library\r\n");
+
+  return dimension;
 }

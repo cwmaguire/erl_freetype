@@ -1,0 +1,18 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+%%! -smp enable -sname factorial -mnesia debug verbose -pa ebin -Wall
+
+main(_) ->
+    %io:format("Loaded modules:~n~p~n", [code:all_loaded()]),
+    {module, render_char} = code:load_file(render_char),
+    [render_char(C) || C <- "AZijlp"].
+    %[render_char(C) || C <- "AZ"].
+
+render_char(Char) ->
+    io:format("Rendering ~p~n", [Char]),
+    FontPath = "/System/Library/Fonts/Menlo.ttc",
+    {Bin, Width, Height, Top, BinWidth}
+        = render_char:render_char([Char], length(FontPath), FontPath),
+    io:format("~p: w = ~p, h = ~p, t = ~p, bw = ~p~n",
+              [[Char], Width, Height, Top, BinWidth]),
+    file:write_file([Char | ".bin"], Bin).
